@@ -2,30 +2,26 @@
 // Lógica del sitio: animaciones, carga de video/audio/galería y modales bio
 
 // Funzione helper per generare URL corretti dei file multimediali
-// Su GitHub Pages, i percorsi relativi dovrebbero funzionare correttamente
+// Su GitHub Pages, i file LFS potrebbero non essere accessibili direttamente
+// Quindi usiamo gli URL raw di GitHub per i file multimediali
 function getMediaUrl(relativePath) {
   // Rimuovi eventuali "./" iniziali per normalizzare
   let path = relativePath.replace(/^\.\//, '');
   
-  // Su GitHub Pages, il repository è servito dalla root del repository
-  // Il percorso dovrebbe essere relativo alla root del sito
+  // Su GitHub Pages, usa gli URL raw di GitHub per i file multimediali
+  // perché i file LFS potrebbero non essere serviti correttamente da GitHub Pages
   const isGitHubPages = window.location.hostname.includes('github.io');
   
   if (isGitHubPages) {
-    // Su GitHub Pages, il repository è servito come: https://username.github.io/repository-name/
-    // Quindi i percorsi devono essere relativi alla root del repository
-    // Se il percorso non inizia con "/", aggiungilo
-    if (!path.startsWith('/')) {
-      // Ottieni il percorso base del repository (es: /LeticiaGaviraMusic)
-      const repoPath = window.location.pathname.split('/').slice(0, 2).join('/');
-      // Se repoPath è vuoto o solo "/", significa che siamo alla root
-      if (repoPath && repoPath !== '/') {
-        return repoPath + '/' + path;
-      } else {
-        return '/' + path;
-      }
-    }
-    return path;
+    // Costruisci l'URL raw di GitHub per il file
+    // Formato: https://raw.githubusercontent.com/username/repo/branch/path
+    const repoPath = window.location.pathname.split('/').slice(0, 2).join('/');
+    const repoName = repoPath.replace('/', '') || 'LeticiaGaviraMusic';
+    const username = 'francescosanto';
+    const branch = 'main';
+    
+    // Usa l'URL raw di GitHub per i file multimediali
+    return `https://raw.githubusercontent.com/${username}/${repoName}/${branch}/${path}`;
   } else {
     // In locale, usa percorsi relativi (rimuovi "/" iniziale se presente)
     return path.replace(/^\//, '');
