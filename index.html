@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leticia Gavira Music - Música en Vivo para Eventos</title>
+    <meta
+      name="description"
+      content="Música en vivo elegante y emocional para bodas, hoteles, restaurantes y eventos corporativos. Voz y piano en directo con repertorio personalizado."
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Mulish:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <!-- HERO -->
+      <header id="home" class="hero">
+        <video
+          class="hero-video"
+          autoplay
+          loop
+          muted
+          playsinline
+        >
+          <source src="Video/Video Sfondo Home.mp4" type="video/mp4" />
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-content container">
+          <div class="hero-text" data-animate="fade-up">
+            <h1 class="hero-title">Leticia Gavira Music</h1>
+            <p class="hero-subtitle">
+              Música en vivo elegante para bodas, eventos privados, hoteles y restaurantes.
+            </p>
+            <p class="hero-description">
+              Proyecto musical creado para acompañar con elegancia los momentos más importantes. 
+              Ofrecemos música en vivo con un sonido cálido y sofisticado, diseñando cada actuación 
+              como una experiencia personalizada que habla de tu historia y tu estilo.
+            </p>
+            <div class="hero-cta">
+              <a href="#contacto" class="btn btn-primary">Solicita información</a>
+              <a href="#audio" class="btn btn-outline">Escucha nuestro sonido</a>
+            </div>
+          </div>
+        </div>
+        <a href="#audio" class="scroll-down" aria-label="Desplazar hacia abajo">
+          <span></span>
+        </a>
+      </header>
+
+      <main>
+        <!-- AUDIO -->
+        <section id="audio" class="section section-dark">
+          <div class="container">
+            <div class="section-header">
+              <div class="section-label" data-animate="fade-right">Audio</div>
+              <h2 class="section-title" data-animate="fade-up">
+                Escucha nuestro sonido en detalle
+              </h2>
+              <p class="section-text" data-animate="fade-up">
+                Una selección de grabaciones en directo y estudio para que puedas
+                imaginar cómo sonará tu evento con nosotros.
+              </p>
+            </div>
+
+            <div class="audio-player" data-animate="fade-up">
+              <div class="audio-now-playing">
+                <span class="label">Reproduciendo ahora:</span>
+                <span id="now-playing-title">Selecciona una canción</span>
+              </div>
+              <div class="audio-controls-buttons">
+                <button id="prev-track" class="icon-btn" aria-label="Pista anterior">
+                  &#9664;
+                </button>
+                <button id="play-pause" class="play-btn" aria-label="Reproducir / Pausar">
+                  &#9658;
+                </button>
+                <button id="next-track" class="icon-btn" aria-label="Pista siguiente">
+                  &#9654;
+                </button>
+              </div>
+              <div class="audio-progress">
+                <span id="current-time">0:00</span>
+                <div class="progress-bar">
+                  <div id="progress-fill"></div>
+                </div>
+                <span id="total-time">0:00</span>
+              </div>
+              <div class="audio-volume">
+                <span class="volume-icon">&#128266;</span>
+                <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.8" />
+              </div>
+            </div>
+
+            <div id="track-list" class="track-list" data-animate="fade-up">
+              <!-- Le tracce dalla carpeta /Canzoni saranno cargadas vía JavaScript -->
+            </div>
+          </div>
+        </section>
+
+        <!-- REPERTORIO -->
+        <section id="repertorio" class="section section-light">
+          <div class="container section-grid">
+            <div class="section-label" data-animate="fade-right">Nuestro repertorio</div>
+            <div class="section-content" data-animate="fade-up">
+              <h2 class="section-title">De los 80 a hoy, adaptado a tu evento</h2>
+              <p class="section-text">
+                Nuestro repertorio viaja <strong>desde los clásicos de los años 80</strong>
+                hasta los éxitos actuales, reinterpretados con un sonido elegante y
+                contemporáneo. Unimos lo mejor del
+                <strong>pop, boleros, baladas, jazz, salsa, merengue y reggaetón acústico</strong>
+                para crear una atmósfera viva, dinámica y siempre refinada.
+              </p>
+              <p class="section-text">
+                Seleccionamos cuidadosamente cada canción en función del tipo de evento,
+                del público y del momento: bienvenida, cóctel, cena, primer baile,
+                apertura de pista... Junto a ti construimos un
+                <strong>repertorio totalmente personalizado</strong>, para que la música
+                acompañe cada instante con el tono perfecto.
+              </p>
+              <div class="tags">
+                <span class="tag">Pop &amp; Baladas</span>
+                <span class="tag">Boleros &amp; Jazz</span>
+                <span class="tag">Salsa &amp; Merengue</span>
+                <span class="tag">Reggaetón acústico</span>
+                <span class="tag">Clásicos &amp; Hits actuales</span>
+              </div>
+              <div class="repertorio-expandible" data-animate="fade-up">
+                <button class="repertorio-toggle" id="repertorio-toggle" aria-expanded="false">
+                  <span>Ver nuestro repertorio</span>
+                  <span class="toggle-icon">&#9660;</span>
+                </button>
+                <div class="repertorio-content" id="repertorio-content">
+                  <div class="repertorio-list">
+                    <div class="repertorio-item">Desde cuando - Alejandro Sanz</div>
+                    <div class="repertorio-item">Algo contigo - Rosario Flores</div>
+                    <div class="repertorio-item">Thinking Out Loud - Ed Sheeran</div>
+                    <div class="repertorio-item">Te quiero mucho - Alba Molina</div>
+                    <div class="repertorio-item">Dilema - Kelly Rowland e Nelly</div>
+                    <div class="repertorio-item">Tacones Rojos - Sebastián Yatra</div>
+                    <div class="repertorio-item">Bachata - Manuel Turizo</div>
+                    <div class="repertorio-item">Tusa - Karol G, Nicky Minaj</div>
+                    <div class="repertorio-item">La vida es un carnaval - Celia Cruz</div>
+                    <div class="repertorio-item">Hit the road Jack - Ray Charles</div>
+                    <div class="repertorio-item">Someone Like You - Adele</div>
+                    <div class="repertorio-item">Skyfall - Adele</div>
+                    <div class="repertorio-item">Die With a Smile - Bruno Mars</div>
+                    <div class="repertorio-item">Leave the door open - Bruno Mars</div>
+                    <div class="repertorio-item">Careless Whisper - George Michael</div>
+                    <div class="repertorio-item">Twist And Shout - The Beatles</div>
+                    <div class="repertorio-item">Every breath you take - The Police</div>
+                    <div class="repertorio-item">If I Ain't Got You - Alicia Keys</div>
+                    <div class="repertorio-item">Sweet Caroline - Neil Diamond</div>
+                    <div class="repertorio-item">Girl From Ipanema - Astrud Gilberto y Stan Getz</div>
+                    <div class="repertorio-item">Viva la vida - Coldplay</div>
+                    <div class="repertorio-item">Take me to church - Hozier</div>
+                    <div class="repertorio-item">Besame mucho - Consuelo Velazquez Torres</div>
+                    <div class="repertorio-item">Golden hour - Jvke</div>
+                    <div class="repertorio-item">Tears dry on their own - Amy Winehouse</div>
+                    <div class="repertorio-item">Dancing queen - ABBA</div>
+                    <div class="repertorio-item">Virtual insanity - Jamiroquai</div>
+                    <div class="repertorio-item">Fly me to the moon - Frank Sinatra</div>
+                    <div class="repertorio-item">L-O-V-E - Nat King Cole</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ESPECTÁCULO -->
+        <section id="espectaculo" class="section section-dark">
+          <div class="container section-grid">
+            <div class="section-label" data-animate="fade-right">Nuestro espectáculo</div>
+            <div class="section-content" data-animate="fade-up">
+              <h2 class="section-title">Un formato elegante, profesional y sin preocupaciones</h2>
+              <p class="section-text">
+                Trabajamos con <strong>equipo de sonido propio</strong> y soluciones
+                adaptadas tanto a <strong>espacios interiores</strong> como a
+                <strong>terrazas, jardines y exteriores</strong>. Nuestro montaje es
+                discreto, limpio y alineado con la estética de tu evento.
+              </p>
+              <p class="section-text">
+                Nos ocupamos de todo: desde la instalación y prueba de sonido hasta la
+                coordinación de los tiempos musicales con el equipo de wedding planner,
+                catering u organización. Tú solo tienes que disfrutar.
+              </p>
+              <div class="espectaculo-items">
+                <div class="espectaculo-card">
+                  <h3>Equipo de audio propio</h3>
+                  <p>
+                    Sistemas de sonido profesionales pensados para un volumen equilibrado,
+                    cálido y confortable, tanto para conversación como para baile.
+                  </p>
+                </div>
+                <div class="espectaculo-card">
+                  <h3>Interior &amp; exterior</h3>
+                  <p>
+                    Soluciones versátiles para hoteles, fincas, rooftops, restaurantes,
+                    jardines y espacios singulares.
+                  </p>
+                </div>
+                <div class="espectaculo-card">
+                  <h3>Montaje sencillo y elegante</h3>
+                  <p>
+                    Escenario cuidado, cableado discreto y una presencia visual alineada
+                    con eventos premium.
+                  </p>
+                </div>
+              </div>
+              <p class="section-text highlight">
+                Nuestro compromiso: <strong>“no te preocupes de nada”</strong>. Nosotros
+                nos encargamos del sonido y de la atmósfera, tú solo de vivir el momento.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIDEO CAROUSEL -->
+        <section id="video" class="section section-light">
+          <div class="container">
+            <div class="section-header">
+              <div class="section-label" data-animate="fade-right">Video</div>
+              <h2 class="section-title" data-animate="fade-up">
+                Descubre nuestro directo en imágenes
+              </h2>
+              <p class="section-text" data-animate="fade-up">
+                Una selección de vídeos en vivo para que puedas sentir la energía, la
+                cercanía y la elegancia de nuestro espectáculo antes de tu evento.
+              </p>
+            </div>
+            <div class="video-carousel-wrapper" data-animate="fade-up">
+              <div class="video-title-container">
+                <h3 id="video-title" class="video-title">Virtual Insanity</h3>
+              </div>
+              <div id="video-carousel" class="video-carousel">
+                <!-- I video dalla carpeta /Video saranno cargados vía JavaScript -->
+              </div>
+              <button id="video-prev" class="carousel-btn carousel-btn-prev" aria-label="Video precedente">&#9664;</button>
+              <button id="video-next" class="carousel-btn carousel-btn-next" aria-label="Video successivo">&#9654;</button>
+              <div class="video-carousel-indicators" id="video-indicators">
+                <!-- Indicatori creati via JavaScript -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- QUIÉNES SOMOS -->
+        <section id="quienes-somos" class="section section-light">
+          <div class="container">
+            <div class="section-header">
+              <div class="section-label" data-animate="fade-right">Quiénes somos</div>
+              <h2 class="section-title" data-animate="fade-up">
+                Dos almas, una misma manera de entender la música
+              </h2>
+              <p class="section-text" data-animate="fade-up">
+                Detrás de Leticia Gavira Music hay una historia compartida, muchas horas
+                de escenario y una pasión profunda por acompañar vidas y marcas a través
+                de la música.
+              </p>
+            </div>
+
+            <div class="bio-list">
+              <div class="bio-item" data-animate="fade-up">
+                <div class="bio-item-image">
+                  <img src="Foto/Leti/IMG_3467.jpeg" alt="Leticia" />
+                </div>
+                <div class="bio-item-content">
+                  <h3>Leticia</h3>
+                  <p class="bio-item-role">Voz principal · Dirección artística</p>
+                  <p class="bio-item-description">
+                    Leticia viene de una familia de músicos lo cual definió su forma de expresarse a través de la musica. Desde muy pequeña siempre ha cantado, y los estilos musicales que le han influido son el pop, el rock, el rnb, el soul y el funky; aunque en los últimos años también se ha movido por diferentes estilos más clásicos latinos, brasileños y españoles . En 2019 comenzó a dar conciertos en directo en su ciudad natal Sevilla. En 2022 sacó su primer EP (In Flux). Estos últimos años ha estado trabajando el perfeccionamiento vocal formando parte del grupo C'orovivo dirigido por Germana Giannini en el cual aprendio sobre improvisación grupal y diferentes cantos del mundo, haciendo experiencias en directo también en Salvador de Bahía y Río de Janeiro (Brasil), donde aprendió cantos de samba, bossanova y sobre percusiones. En la actualidad está trabajando la interpretación teatral y participando en la creación e interpretación de un espectáculo.
+                  </p>
+                </div>
+              </div>
+              <div class="bio-item bio-item-reverse" data-animate="fade-up">
+                <div class="bio-item-image">
+                  <img src="Foto/Fra/6019103366778574392.jpg" alt="Fra" />
+                </div>
+                <div class="bio-item-content">
+                  <h3>Fra</h3>
+                  <p class="bio-item-role">Piano &amp; producción musical</p>
+                  <p class="bio-item-description">
+                    Francesco comenzó a estudiar piano y teoría musical a los 12 años. A los dieciséis se acercó a la guitarra y a la producción musical, camino que lo llevó a publicar su primer sencillo completamente autoproducido a los 20 años. Posteriormente entró a formar parte de un sello discográfico, con el cual continuó su actividad creativa, produciendo su primer álbum autoproducido y realizando una serie de conciertos en el norte de Italia como pianista y acompañante. En 2023 se graduó en Física y trabajó durante un año como informático, pero su pasión por la música prevaleció. En 2025 inició sus estudios en producción musical y técnica de sonido en el instituto NAM de Milán, donde se graduó con la máxima calificación. Actualmente trabaja como pianista y continúa su formación en jazz en el Conservatorio de Sevilla.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- GALERÍA -->
+        <section id="galeria" class="section section-dark">
+          <div class="container">
+            <div class="section-header">
+              <div class="section-label" data-animate="fade-right">Galería</div>
+              <h2 class="section-title" data-animate="fade-up">
+                Instantes que cuentan nuestra forma de hacer música
+              </h2>
+            </div>
+            <div class="gallery-carousel-wrapper" data-animate="fade-up">
+              <div id="gallery-carousel" class="gallery-carousel">
+                <!-- Imágenes de /Foto/Leti, /Foto/Fra y /Foto/LetiEFra cargadas vía JavaScript -->
+              </div>
+              <button id="gallery-prev" class="carousel-btn carousel-btn-prev" aria-label="Foto precedente">&#9664;</button>
+              <button id="gallery-next" class="carousel-btn carousel-btn-next" aria-label="Foto successiva">&#9654;</button>
+              <div class="gallery-carousel-indicators" id="gallery-indicators">
+                <!-- Indicatori creati via JavaScript -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA FINAL -->
+        <section id="contacto" class="section section-light final-cta">
+          <div class="container final-cta-content" data-animate="fade-up">
+            <h2 class="section-title">
+              ¿Listos para poner música a vuestro momento?
+            </h2>
+            <p class="section-text">
+              Cuéntanos cómo será tu boda, tu evento privado o la atmósfera que quieres
+              crear en tu hotel o restaurante. Diseñaremos juntos una propuesta musical
+              a medida, con todo el cuidado y la elegancia que tu evento merece.
+            </p>
+            <div class="final-cta-actions">
+              <a href="mailto:laeti.leti.gp@gmail.com" class="btn btn-primary">
+                Reserva tu evento
+              </a>
+              <a href="mailto:laeti.leti.gp@gmail.com?subject=Solicitud%20de%20presupuesto%20-%20Leticia%20Gavira%20Music" class="btn btn-outline">
+                Solicita presupuesto
+              </a>
+            </div>
+            <p class="section-text small">
+              También podemos coordinar la música con tu wedding planner, hotel o empresa
+              para que el proceso sea aún más sencillo.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <!-- FOOTER -->
+      <footer class="footer">
+        <div class="container footer-content">
+          <div class="footer-block">
+            <h4>Contacto</h4>
+            <p>Email: <a href="mailto:laeti.leti.gp@gmail.com">laeti.leti.gp@gmail.com</a></p>
+            <p>Teléfono: <a href="tel:+34677821314">+34 677 821 314</a></p>
+          </div>
+          <div class="footer-block footer-copy">
+            <p>&copy; <span id="year"></span> Leticia Gavira Music. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- BANNER MINIMIZZATO (SPOTIFY-STYLE) -->
+    <div id="mini-player-bar" class="mini-player-bar">
+      <div class="mini-player-progress">
+        <div id="mini-progress-fill" class="mini-player-progress-fill"></div>
+      </div>
+      <div class="mini-player-info">
+        <div id="mini-player-title" class="mini-player-title">Selecciona una canción</div>
+        <div id="mini-player-time" class="mini-player-time">0:00 / 0:00</div>
+      </div>
+      <div class="mini-player-controls">
+        <button id="mini-prev-btn" class="mini-player-btn icon-btn-mini" aria-label="Pista anterior">&#9664;</button>
+        <button id="mini-play-pause-btn" class="mini-player-btn play-btn-mini" aria-label="Reproducir / Pausar">&#9658;</button>
+        <button id="mini-next-btn" class="mini-player-btn icon-btn-mini" aria-label="Pista siguiente">&#9654;</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
+
+
