@@ -50,10 +50,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Aggiorna il percorso del video hero
   const heroVideo = document.querySelector('.hero-video source');
   if (heroVideo) {
-    // Usa il nuovo video "Video Home.mp4"
-    // Se il video è stato caricato su Cloudinary, aggiorna CLOUDINARY_VIDEOS.heroVideo e usa quello invece
-    // Per ora usa getMediaUrl() che funzionerà in locale e su GitHub Pages (se il file non è troppo grande)
-    const videoUrl = getMediaUrl("Video/Video Home.mp4");
+    // Su GitHub Pages, i file Git LFS non funzionano correttamente
+    // Quindi usa Cloudinary se disponibile, altrimenti il file locale
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    let videoUrl;
+    
+    if (isGitHubPages && CLOUDINARY_VIDEOS.heroVideo && !CLOUDINARY_VIDEOS.heroVideo.includes('Video_Sfondo_Home')) {
+      // Usa Cloudinary su GitHub Pages se l'URL è stato aggiornato
+      videoUrl = CLOUDINARY_VIDEOS.heroVideo;
+    } else {
+      // In locale o se Cloudinary non è configurato, usa il file locale
+      videoUrl = getMediaUrl("Video/Video Home.mp4");
+    }
+    
     heroVideo.src = videoUrl;
     // Ricarica il video con il nuovo percorso
     const videoElement = heroVideo.parentElement;
