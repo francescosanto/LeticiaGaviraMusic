@@ -1,6 +1,12 @@
 // script.js
 // Lógica del sitio: animaciones, carga de video/audio/galería y modales bio
 
+// Configurazione Cloudinary per i video
+const CLOUDINARY_VIDEOS = {
+  heroVideo: "https://res.cloudinary.com/dq33ayw5c/video/upload/v1768243515/Video_Sfondo_Home.mp4", // AGGIORNA QUESTO URL dopo aver caricato il video su Cloudinary
+  mashupVideo: "https://res.cloudinary.com/dq33ayw5c/video/upload/v1768243515/Mashup_kxdrlp.mp4"
+};
+
 // Funzione helper per generare URL corretti dei file multimediali
 // Su GitHub Pages, i file LFS potrebbero non essere accessibili direttamente
 // Quindi usiamo gli URL raw di GitHub per i file multimediali
@@ -13,15 +19,24 @@ function getMediaUrl(relativePath) {
   const isGitHubPages = window.location.hostname.includes('github.io');
   
   if (isGitHubPages) {
-    // Costruisci l'URL raw di GitHub per il file
-    // Formato: https://raw.githubusercontent.com/username/repo/branch/path
-    const repoPath = window.location.pathname.split('/').slice(0, 2).join('/');
-    const repoName = repoPath.replace('/', '') || 'LeticiaGaviraMusic';
-    const username = 'francescosanto';
+    // Estrai username e repository dall'URL corrente
+    // Formato GitHub Pages: https://username.github.io/repository/
+    const hostnameParts = window.location.hostname.split('.');
+    const username = hostnameParts[0]; // La prima parte dell'hostname è l'username
+    
+    // Estrai il nome del repository dal pathname
+    // Se il pathname è "/repository/" o "/repository/index.html", il repo è "repository"
+    const pathnameParts = window.location.pathname.split('/').filter(p => p);
+    const repoName = pathnameParts[0] || 'LetiFra'; // Fallback al nome della cartella locale
+    
+    // Prova prima con 'main', poi con 'master' come fallback
     const branch = 'main';
     
-    // Usa l'URL raw di GitHub per i file multimediali
-    return `https://raw.githubusercontent.com/${username}/${repoName}/${branch}/${path}`;
+    // Costruisci l'URL raw di GitHub per il file
+    // Formato: https://raw.githubusercontent.com/username/repo/branch/path
+    const rawUrl = `https://raw.githubusercontent.com/${username}/${repoName}/${branch}/${path}`;
+    
+    return rawUrl;
   } else {
     // In locale, usa percorsi relativi (rimuovi "/" iniziale se presente)
     return path.replace(/^\//, '');
@@ -32,10 +47,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const yearSpan = document.getElementById("year");
   if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-  // Aggiorna il percorso del video hero
+  // Aggiorna il percorso del video hero (usa Cloudinary)
   const heroVideo = document.querySelector('.hero-video source');
   if (heroVideo) {
-    heroVideo.src = getMediaUrl("Video/Video Sfondo Home.mp4");
+    // Usa Cloudinary per il video hero invece del file locale
+    heroVideo.src = CLOUDINARY_VIDEOS.heroVideo;
     // Ricarica il video con il nuovo percorso
     const videoElement = heroVideo.parentElement;
     videoElement.load();
@@ -83,102 +99,28 @@ function initScrollAnimations() {
 }
 
 // -----------------------------
-// VIDEO: CAROUSEL CON UN SOLO VIDEO ALLA VOLTA
+// VIDEO: SINGOLO VIDEO
 // -----------------------------
 
 function initVideoCarousel() {
-  const container = document.getElementById("video-carousel");
-  const indicatorsContainer = document.getElementById("video-indicators");
-  const prevBtn = document.getElementById("video-prev");
-  const nextBtn = document.getElementById("video-next");
+  const container = document.getElementById("video-container");
   
   if (!container) return;
 
-  const videos = [
-    { file: getMediaUrl("Video/Virtual Insanity.mov"), title: "Virtual Insanity" },
-    { file: getMediaUrl("Video/Leave The Door Open.mov"), title: "Leave The Door Open" },
-    { file: getMediaUrl("Video/Sweet Caroline.mov"), title: "Sweet Caroline" },
-    { file: getMediaUrl("Video/Tears Dry.mov"), title: "Tears Dry On Their Own" },
-    { file: getMediaUrl("Video/Te quiero mucho.mov"), title: "Te quiero mucho" },
-    { file: getMediaUrl("Video/La vida es un carnival.mov"), title: "La vida es un carnaval" },
-  ];
+  const videoData = {
+    file: CLOUDINARY_VIDEOS.mashupVideo,
+    title: "Mashup"
+  };
 
-  let currentIndex = 0;
-  const titleElement = document.getElementById("video-title");
+  // Creare il video
+  const video = document.createElement("video");
+  video.src = videoData.file;
+  video.controls = true;
+  video.preload = "metadata";
+  video.playsInline = true;
+  video.className = "video-player";
 
-  // Crear i video nel carosello
-  videos.forEach((videoData, index) => {
-    const slide = document.createElement("div");
-    slide.className = "video-carousel-slide";
-    if (index === 0) slide.classList.add("active");
-
-    const video = document.createElement("video");
-    video.src = videoData.file;
-    video.controls = true;
-    video.preload = "metadata";
-    video.playsInline = true;
-
-    slide.appendChild(video);
-    container.appendChild(slide);
-
-    // Creare indicatori
-    const indicator = document.createElement("button");
-    indicator.className = "video-indicator";
-    if (index === 0) indicator.classList.add("active");
-    indicator.setAttribute("aria-label", videoData.title);
-    indicator.addEventListener("click", () => goToSlide(index));
-    if (indicatorsContainer) indicatorsContainer.appendChild(indicator);
-  });
-
-  // Mostrare il titolo iniziale
-  if (titleElement && videos[0]) {
-    titleElement.textContent = videos[0].title;
-  }
-
-  function goToSlide(index) {
-    if (index < 0 || index >= videos.length) return;
-    
-    const slides = container.querySelectorAll(".video-carousel-slide");
-    const indicators = indicatorsContainer?.querySelectorAll(".video-indicator");
-    const currentVideo = slides[currentIndex]?.querySelector("video");
-    
-    // Pausare il video corrente
-    if (currentVideo) {
-      currentVideo.pause();
-      currentVideo.currentTime = 0;
-    }
-
-    // Rimuovere active dalla slide corrente
-    slides[currentIndex]?.classList.remove("active");
-    indicators?.[currentIndex]?.classList.remove("active");
-
-    currentIndex = index;
-
-    // Aggiungere active alla nuova slide
-    slides[currentIndex]?.classList.add("active");
-    indicators?.[currentIndex]?.classList.add("active");
-
-    // Aggiornare il titolo
-    if (titleElement && videos[currentIndex]) {
-      titleElement.textContent = videos[currentIndex].title;
-    }
-  }
-
-  function nextSlide() {
-    const nextIndex = (currentIndex + 1) % videos.length;
-    goToSlide(nextIndex);
-  }
-
-  function prevSlide() {
-    const prevIndex = (currentIndex - 1 + videos.length) % videos.length;
-    goToSlide(prevIndex);
-  }
-
-  if (nextBtn) nextBtn.addEventListener("click", nextSlide);
-  if (prevBtn) prevBtn.addEventListener("click", prevSlide);
-
-  // Auto-play opzionale (commentato per non essere invasivo)
-  // setInterval(nextSlide, 10000); // Cambia video ogni 10 secondi
+  container.appendChild(video);
 }
 
 // -----------------------------
@@ -189,20 +131,18 @@ function initAudioPlayer() {
   const trackListContainer = document.getElementById("track-list");
   if (!trackListContainer) return;
 
-  // Igual que con los vídeos, definimos una lista de archivos esperados en /Canzoni
-  // Puedes cambiar los nombres según tus archivos reales.
-
+  // Usamos los archivos MP3 de la carpeta "Songs MP3" que pesan menos
   const tracks = [
-    { file: getMediaUrl("Canzoni/Golden Hour.wav"), title: "Golden Hour", info: "Live session" },
-    { file: getMediaUrl("Canzoni/If I Ain't Got You.wav"), title: "If I Ain't Got You", info: "Versión acústica" },
-    { file: getMediaUrl("Canzoni/La Bachata - Tusa.wav"), title: "La Bachata - Tusa", info: "En directo" },
-    { file: getMediaUrl("Canzoni/Viva La Vida.wav"), title: "Viva La Vida", info: "Balada" },
-    { file: getMediaUrl("Canzoni/La vida es un carnival.wav"), title: "La vida es un carnaval", info: "En directo" },
-    { file: getMediaUrl("Canzoni/Leave the door open.wav"), title: "Leave The Door Open", info: "Live session" },
-    { file: getMediaUrl("Canzoni/Sweet caroline.wav"), title: "Sweet Caroline", info: "En directo" },
-    { file: getMediaUrl("Canzoni/Te quiero mucho.wav"), title: "Te quiero mucho", info: "Versión acústica" },
-    { file: getMediaUrl("Canzoni/Tears dry on their own.wav"), title: "Tears Dry On Their Own", info: "Live session" },
-    { file: getMediaUrl("Canzoni/Virtual Insanity.wav"), title: "Virtual Insanity", info: "En directo" },
+    { file: getMediaUrl("Songs MP3/Golden-Hour.mp3"), title: "Golden Hour", info: "Live session" },
+    { file: getMediaUrl("Songs MP3/If-I-Ain_t-Got-You.mp3"), title: "If I Ain't Got You", info: "Versión acústica" },
+    { file: getMediaUrl("Songs MP3/La-Bachata-Tusa.mp3"), title: "La Bachata - Tusa", info: "En directo" },
+    { file: getMediaUrl("Songs MP3/Viva-La-Vida.mp3"), title: "Viva La Vida", info: "Balada" },
+    { file: getMediaUrl("Songs MP3/La-vida-es-un-carnival.mp3"), title: "La vida es un carnaval", info: "En directo" },
+    { file: getMediaUrl("Songs MP3/Leave-the-door-open.mp3"), title: "Leave The Door Open", info: "Live session" },
+    { file: getMediaUrl("Songs MP3/Sweet-caroline.mp3"), title: "Sweet Caroline", info: "En directo" },
+    { file: getMediaUrl("Songs MP3/Te-quiero-mucho.mp3"), title: "Te quiero mucho", info: "Versión acústica" },
+    { file: getMediaUrl("Songs MP3/Tears-dry-on-their-own.mp3"), title: "Tears Dry On Their Own", info: "Live session" },
+    { file: getMediaUrl("Songs MP3/Virtual-Insanity.mp3"), title: "Virtual Insanity", info: "En directo" },
   ];
 
   const audio = new Audio();
