@@ -159,17 +159,75 @@ function initVideoCarousel() {
   video.preload = "metadata";
   video.playsInline = true;
   video.className = "video-player";
+  video.muted = true; // Muta temporaneamente per evitare audio durante la cattura del frame
+  video.crossOrigin = "anonymous"; // Necessario per alcuni video esterni (Cloudinary)
   
-  // Usa un'immagine dalla galleria come poster per evitare lo schermo nero
-  // Prendi la prima immagine disponibile dalla galleria
-  const posterImage = getMediaUrl("Foto/LetiEFra/DSC02576.jpeg");
-  video.poster = posterImage;
+  let frameCaptured = false;
   
-  // Quando i metadati sono caricati, assicurati che il video mostri il primo frame
+  // Funzione per catturare il primo frame e usarlo come poster
+  function captureFirstFrame() {
+    if (frameCaptured) return; // Evita di catturare più volte
+    
+    try {
+      // Verifica che il video abbia dimensioni valide
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        return; // Le dimensioni non sono ancora disponibili
+      }
+      
+      // Crea un canvas per catturare il frame
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      
+      // Imposta le dimensioni del canvas alle dimensioni del video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Disegna il frame corrente del video sul canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Converti il canvas in un'immagine data URL
+      const dataURL = canvas.toDataURL("image/jpeg", 0.85);
+      
+      // Usa l'immagine generata come poster
+      video.poster = dataURL;
+      frameCaptured = true;
+      
+      // Rimuovi il muto dopo aver catturato il frame (il video ha i controlli, l'utente può controllare l'audio)
+      video.muted = false;
+    } catch (error) {
+      console.warn("Impossibile catturare il primo frame del video:", error);
+      // Fallback: usa uno sfondo scuro se la cattura fallisce
+      video.style.backgroundColor = "#0a0a0f";
+    }
+  }
+  
+  // Quando i metadati sono caricati, vai al primo frame e catturalo
   video.addEventListener("loadedmetadata", () => {
-    // Imposta il primo frame come poster visivo se il poster non è stato caricato
-    if (!video.poster || video.poster === "") {
-      video.currentTime = 0.1;
+    // Vai al primo frame (0.1 secondi per assicurarsi che ci sia un frame valido)
+    if (video.duration > 0) {
+      video.currentTime = Math.min(0.1, video.duration * 0.01);
+    }
+  });
+  
+  // Quando il frame è caricato dopo il seek, catturalo
+  video.addEventListener("seeked", () => {
+    if (video.readyState >= 2 && !frameCaptured) { // HAVE_CURRENT_DATA o superiore
+      captureFirstFrame();
+    }
+  });
+  
+  // Fallback: se il seeked non funziona, prova quando il video può essere riprodotto
+  video.addEventListener("loadeddata", () => {
+    if (!frameCaptured && video.readyState >= 2) {
+      if (video.currentTime === 0) {
+        video.currentTime = 0.1;
+      }
+      // Usa un piccolo timeout per assicurarsi che il frame sia caricato
+      setTimeout(() => {
+        if (!frameCaptured && video.readyState >= 2) {
+          captureFirstFrame();
+        }
+      }, 200);
     }
   });
 
