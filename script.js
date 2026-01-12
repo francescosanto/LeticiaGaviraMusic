@@ -47,11 +47,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const yearSpan = document.getElementById("year");
   if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-  // Aggiorna il percorso del video hero (usa Cloudinary)
+  // Aggiorna il percorso del video hero
   const heroVideo = document.querySelector('.hero-video source');
   if (heroVideo) {
-    // Usa Cloudinary per il video hero invece del file locale
-    heroVideo.src = CLOUDINARY_VIDEOS.heroVideo;
+    // Usa il nuovo video "Video Home.mp4"
+    // Se il video è stato caricato su Cloudinary, aggiorna CLOUDINARY_VIDEOS.heroVideo e usa quello invece
+    // Per ora usa getMediaUrl() che funzionerà in locale e su GitHub Pages (se il file non è troppo grande)
+    const videoUrl = getMediaUrl("Video/Video Home.mp4");
+    heroVideo.src = videoUrl;
     // Ricarica il video con il nuovo percorso
     const videoElement = heroVideo.parentElement;
     videoElement.load();
