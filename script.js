@@ -48,8 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
   // Aggiorna il percorso del video hero
-  const heroVideo = document.querySelector('.hero-video source');
-  if (heroVideo) {
+  const heroVideoElement = document.querySelector('.hero-video');
+  const heroVideoSource = document.querySelector('.hero-video source');
+  
+  if (heroVideoElement) {
     // Su GitHub Pages, i file Git LFS non funzionano correttamente
     // Quindi usa Cloudinary se disponibile, altrimenti il file locale
     const isGitHubPages = window.location.hostname.includes('github.io');
@@ -63,10 +65,36 @@ document.addEventListener("DOMContentLoaded", () => {
       videoUrl = getMediaUrl("Video/Video Home.mp4");
     }
     
-    heroVideo.src = videoUrl;
+    // Aggiorna il source se esiste, altrimenti imposta direttamente il src del video
+    if (heroVideoSource) {
+      heroVideoSource.src = videoUrl;
+      heroVideoSource.type = "video/mp4";
+    } else {
+      heroVideoElement.src = videoUrl;
+    }
+    
     // Ricarica il video con il nuovo percorso
-    const videoElement = heroVideo.parentElement;
-    videoElement.load();
+    heroVideoElement.load();
+    
+    // Gestisci errori di caricamento
+    heroVideoElement.addEventListener("error", (e) => {
+      console.error("Errore nel caricamento del video hero:", e);
+      // Prova con il percorso diretto come fallback
+      const fallbackUrl = "Video/Video Home.mp4";
+      if (videoUrl !== fallbackUrl) {
+        if (heroVideoSource) {
+          heroVideoSource.src = fallbackUrl;
+        } else {
+          heroVideoElement.src = fallbackUrl;
+        }
+        heroVideoElement.load();
+      }
+    });
+    
+    // Verifica che il video sia caricato correttamente
+    heroVideoElement.addEventListener("loadeddata", () => {
+      console.log("Video hero caricato correttamente");
+    });
   }
 
   // Aggiorna i percorsi delle immagini nelle bio
@@ -131,6 +159,19 @@ function initVideoCarousel() {
   video.preload = "metadata";
   video.playsInline = true;
   video.className = "video-player";
+  
+  // Usa un'immagine dalla galleria come poster per evitare lo schermo nero
+  // Prendi la prima immagine disponibile dalla galleria
+  const posterImage = getMediaUrl("Foto/LetiEFra/DSC02576.jpeg");
+  video.poster = posterImage;
+  
+  // Quando i metadati sono caricati, assicurati che il video mostri il primo frame
+  video.addEventListener("loadedmetadata", () => {
+    // Imposta il primo frame come poster visivo se il poster non è stato caricato
+    if (!video.poster || video.poster === "") {
+      video.currentTime = 0.1;
+    }
+  });
 
   container.appendChild(video);
 }
@@ -230,6 +271,21 @@ function initAudioPlayer() {
   function playAudio() {
     if (currentIndex === -1) {
       loadTrack(0);
+      // Aspetta che il track sia caricato prima di riprodurlo
+      audio.addEventListener("canplay", function playWhenReady() {
+        audio.removeEventListener("canplay", playWhenReady);
+        audio.play()
+          .then(() => {
+            isPlaying = true;
+            if (playPauseBtn) playPauseBtn.innerHTML = "&#10074;&#10074;";
+            if (miniPlayPauseBtn) miniPlayPauseBtn.innerHTML = "&#10074;&#10074;";
+            showMiniPlayer();
+          })
+          .catch(() => {
+            // En caso de error (autoplay bloqueado, etc.), no hacemos nada especial
+          });
+      }, { once: true });
+      return;
     }
     audio
       .play()
@@ -314,9 +370,20 @@ function initAudioPlayer() {
   }
 
   if (volumeSlider) {
-    audio.volume = parseFloat(volumeSlider.value || "0.8");
-    volumeSlider.addEventListener("input", () => {
-      audio.volume = parseFloat(volumeSlider.value || "0.8");
+    // Imposta il volume iniziale
+    const initialVolume = parseFloat(volumeSlider.value || "0.8");
+    audio.volume = initialVolume;
+    
+    // Aggiorna il volume quando lo slider cambia
+    volumeSlider.addEventListener("input", (e) => {
+      const newVolume = parseFloat(e.target.value);
+      audio.volume = newVolume;
+    });
+    
+    // Assicurati che il volume sia sincronizzato anche quando cambia il valore dello slider
+    volumeSlider.addEventListener("change", (e) => {
+      const newVolume = parseFloat(e.target.value);
+      audio.volume = newVolume;
     });
   }
 
