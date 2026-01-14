@@ -32,9 +32,13 @@ function getMediaUrl(relativePath) {
     // Prova prima con 'main', poi con 'master' come fallback
     const branch = 'main';
     
+    // Codifica gli spazi e altri caratteri speciali nel percorso
+    // GitHub raw URLs richiedono che gli spazi siano codificati come %20
+    const encodedPath = encodeURI(path).replace(/#/g, '%23');
+    
     // Costruisci l'URL raw di GitHub per il file
     // Formato: https://raw.githubusercontent.com/username/repo/branch/path
-    const rawUrl = `https://raw.githubusercontent.com/${username}/${repoName}/${branch}/${path}`;
+    const rawUrl = `https://raw.githubusercontent.com/${username}/${repoName}/${branch}/${encodedPath}`;
     
     return rawUrl;
   } else {
@@ -58,19 +62,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const heroVideoSource = document.querySelector('.hero-video source');
   
   if (heroVideoElement) {
-    // Su GitHub Pages, i file Git LFS non funzionano correttamente
-    // Quindi usa Cloudinary se disponibile, altrimenti il file locale
-    const isGitHubPages = window.location.hostname.includes('github.io') || 
-                          window.location.hostname.includes('github.com');
-    let videoUrl;
-    
-    if (isGitHubPages && CLOUDINARY_VIDEOS.heroVideo) {
-      // Usa Cloudinary su GitHub Pages
-      videoUrl = CLOUDINARY_VIDEOS.heroVideo;
-    } else {
-      // In locale, usa il file locale
-      videoUrl = getMediaUrl("Video/Video Home.mp4");
-    }
+    // Usa sempre il file locale, sia in locale che su GitHub Pages
+    // La funzione getMediaUrl gestisce automaticamente i percorsi corretti
+    const videoUrl = getMediaUrl("Video/Video Home.mp4");
     
     // Aggiorna il source se esiste, altrimenti imposta direttamente il src del video
     if (heroVideoSource) {
@@ -86,25 +80,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gestisci errori di caricamento
     heroVideoElement.addEventListener("error", (e) => {
       console.error("Errore nel caricamento del video hero:", e);
-      // Prova con Cloudinary come fallback se non era già usato
-      if (!isGitHubPages && CLOUDINARY_VIDEOS.heroVideo) {
-        const cloudinaryUrl = CLOUDINARY_VIDEOS.heroVideo;
-        if (heroVideoSource) {
-          heroVideoSource.src = cloudinaryUrl;
-        } else {
-          heroVideoElement.src = cloudinaryUrl;
-        }
-        heroVideoElement.load();
+      // Prova con percorso diretto come fallback
+      const fallbackUrl = "Video/Video Home.mp4";
+      if (heroVideoSource) {
+        heroVideoSource.src = fallbackUrl;
       } else {
-        // Ultimo fallback: percorso diretto
-        const fallbackUrl = "Video/Video Home.mp4";
-        if (heroVideoSource) {
-          heroVideoSource.src = fallbackUrl;
-        } else {
-          heroVideoElement.src = fallbackUrl;
-        }
-        heroVideoElement.load();
+        heroVideoElement.src = fallbackUrl;
       }
+      heroVideoElement.load();
     });
     
     // Verifica che il video sia caricato correttamente
