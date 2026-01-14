@@ -25,6 +25,9 @@ body {
   margin: 0;
   padding: 0;
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -46,6 +49,9 @@ video {
   background: radial-gradient(circle at 0 0, #1c1724 0, transparent 45%),
     radial-gradient(circle at 100% 100%, #22202e 0, transparent 40%),
     linear-gradient(145deg, #050509 0, #050509 40%, #0b0b12 100%);
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 .container {
@@ -650,6 +656,13 @@ a {
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.75);
 }
 
+.play-btn:active,
+.play-btn:focus {
+  background: linear-gradient(120deg, #d8b26e, #b08a4b);
+  color: #121214;
+  transform: scale(0.95);
+}
+
 .play-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
@@ -675,11 +688,15 @@ a {
 
 .progress-bar {
   flex: 1;
-  height: 4px;
+  height: 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
-  overflow: hidden;
+  overflow: visible;
   cursor: pointer;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
 .progress-bar #progress-fill {
@@ -687,12 +704,64 @@ a {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #d8b26e, #f3e2b8);
+  position: relative;
+  pointer-events: none;
+}
+
+.progress-bar #progress-fill::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d8b26e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 2px solid #fff;
+  cursor: grab;
+  pointer-events: auto;
+  transition: transform 0.1s, width 0.1s, height 0.1s, box-shadow 0.1s;
+  opacity: 1;
+}
+
+.progress-bar #progress-fill::before {
+  content: '';
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: auto;
+  cursor: grab;
+  z-index: 1;
+}
+
+.progress-bar:hover #progress-fill::after,
+.progress-bar:active #progress-fill::after,
+.progress-bar.dragging #progress-fill::after {
+  cursor: grabbing;
+  transform: translateY(-50%) scale(1.3);
+  width: 20px;
+  height: 20px;
+  right: -10px;
+  box-shadow: 0 4px 12px rgba(216, 178, 108, 0.6);
 }
 
 .audio-volume {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+@media (max-width: 720px) {
+  .audio-volume {
+    display: none;
+  }
 }
 
 .audio-volume .volume-icon {
@@ -749,15 +818,21 @@ a {
 }
 
 .track-play {
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
-  background: rgba(10, 10, 16, 0.96);
+  background: transparent;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.track-item.active .track-play {
+  background: #fff;
+  border-color: #fff;
 }
 
 /* QUIÉNES SOMOS */
@@ -1265,6 +1340,30 @@ a {
   .section-title {
     font-size: 1.6rem;
   }
+  
+  .progress-bar {
+    height: 8px;
+  }
+  
+  .progress-bar #progress-fill::after {
+    width: 20px;
+    height: 20px;
+    right: -10px;
+  }
+  
+  .progress-bar #progress-fill::before {
+    width: 36px;
+    height: 36px;
+    right: -18px;
+  }
+  
+  .progress-bar:hover #progress-fill::after,
+  .progress-bar:active #progress-fill::after,
+  .progress-bar.dragging #progress-fill::after {
+    width: 24px;
+    height: 24px;
+    right: -12px;
+  }
 }
 
 /* BANNER MINIMIZZATO (SPOTIFY-STYLE) */
@@ -1352,6 +1451,13 @@ a {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
+.mini-player-btn.play-btn-mini:active,
+.mini-player-btn.play-btn-mini:focus {
+  background: linear-gradient(120deg, #d8b26e, #b08a4b);
+  color: #121214;
+  transform: scale(0.95);
+}
+
 .mini-player-btn:hover {
   border-color: var(--accent);
   background: rgba(12, 12, 18, 0.9);
@@ -1363,9 +1469,13 @@ a {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 6px;
   background: transparent;
   cursor: pointer;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
 .mini-player-progress-fill {
@@ -1373,6 +1483,52 @@ a {
   background: linear-gradient(90deg, #d8b26e, #f3e2b8);
   width: 0;
   transition: width 0.1s linear;
+  position: relative;
+  pointer-events: none;
+}
+
+.mini-player-progress-fill::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d8b26e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 2px solid #fff;
+  cursor: grab;
+  pointer-events: auto;
+  transition: transform 0.1s, width 0.1s, height 0.1s, box-shadow 0.1s;
+  opacity: 1;
+}
+
+.mini-player-progress-fill::before {
+  content: '';
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: auto;
+  cursor: grab;
+  z-index: 1;
+}
+
+.mini-player-progress:hover .mini-player-progress-fill::after,
+.mini-player-progress:active .mini-player-progress-fill::after,
+.mini-player-progress.dragging .mini-player-progress-fill::after {
+  cursor: grabbing;
+  transform: translateY(-50%) scale(1.3);
+  width: 20px;
+  height: 20px;
+  right: -10px;
+  box-shadow: 0 4px 12px rgba(216, 178, 108, 0.6);
 }
 
 @media (max-width: 720px) {
@@ -1398,6 +1554,30 @@ a {
   .mini-player-btn.play-btn-mini {
     width: 36px;
     height: 36px;
+  }
+  
+  .mini-player-progress {
+    height: 8px;
+  }
+  
+  .mini-player-progress-fill::after {
+    width: 20px;
+    height: 20px;
+    right: -10px;
+  }
+  
+  .mini-player-progress-fill::before {
+    width: 36px;
+    height: 36px;
+    right: -18px;
+  }
+  
+  .mini-player-progress:hover .mini-player-progress-fill::after,
+  .mini-player-progress:active .mini-player-progress-fill::after,
+  .mini-player-progress.dragging .mini-player-progress-fill::after {
+    width: 24px;
+    height: 24px;
+    right: -12px;
   }
 }
 

@@ -43,25 +43,32 @@ function getMediaUrl(relativePath) {
   }
 }
 
+// Variabile globale per il video hero (per gestire la mutua esclusione con l'audio)
+let heroVideoElement = null;
+
+// Sistema di lock globale per garantire mutua esclusione tra audio e video
+let currentPlayingMedia = null; // 'audio', 'hero-video', o 'section-video'
+
 document.addEventListener("DOMContentLoaded", () => {
   const yearSpan = document.getElementById("year");
   if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
   // Aggiorna il percorso del video hero
-  const heroVideoElement = document.querySelector('.hero-video');
+  heroVideoElement = document.querySelector('.hero-video');
   const heroVideoSource = document.querySelector('.hero-video source');
   
   if (heroVideoElement) {
     // Su GitHub Pages, i file Git LFS non funzionano correttamente
     // Quindi usa Cloudinary se disponibile, altrimenti il file locale
-    const isGitHubPages = window.location.hostname.includes('github.io');
+    const isGitHubPages = window.location.hostname.includes('github.io') || 
+                          window.location.hostname.includes('github.com');
     let videoUrl;
     
-    if (isGitHubPages && CLOUDINARY_VIDEOS.heroVideo && !CLOUDINARY_VIDEOS.heroVideo.includes('Video_Sfondo_Home')) {
-      // Usa Cloudinary su GitHub Pages se l'URL è stato aggiornato
+    if (isGitHubPages && CLOUDINARY_VIDEOS.heroVideo) {
+      // Usa Cloudinary su GitHub Pages
       videoUrl = CLOUDINARY_VIDEOS.heroVideo;
     } else {
-      // In locale o se Cloudinary non è configurato, usa il file locale
+      // In locale, usa il file locale
       videoUrl = getMediaUrl("Video/Video Home.mp4");
     }
     
@@ -79,9 +86,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gestisci errori di caricamento
     heroVideoElement.addEventListener("error", (e) => {
       console.error("Errore nel caricamento del video hero:", e);
-      // Prova con il percorso diretto come fallback
-      const fallbackUrl = "Video/Video Home.mp4";
-      if (videoUrl !== fallbackUrl) {
+      // Prova con Cloudinary come fallback se non era già usato
+      if (!isGitHubPages && CLOUDINARY_VIDEOS.heroVideo) {
+        const cloudinaryUrl = CLOUDINARY_VIDEOS.heroVideo;
+        if (heroVideoSource) {
+          heroVideoSource.src = cloudinaryUrl;
+        } else {
+          heroVideoElement.src = cloudinaryUrl;
+        }
+        heroVideoElement.load();
+      } else {
+        // Ultimo fallback: percorso diretto
+        const fallbackUrl = "Video/Video Home.mp4";
         if (heroVideoSource) {
           heroVideoSource.src = fallbackUrl;
         } else {
@@ -94,6 +110,41 @@ document.addEventListener("DOMContentLoaded", () => {
     // Verifica che il video sia caricato correttamente
     heroVideoElement.addEventListener("loadeddata", () => {
       console.log("Video hero caricato correttamente");
+    });
+    
+    // Aggiungi anche un listener per canplay per assicurarsi che il video sia pronto
+    heroVideoElement.addEventListener("canplay", () => {
+      console.log("Video hero pronto per la riproduzione");
+    });
+    
+    // Gestisci la mutua esclusione: quando il video hero inizia a riprodursi, ferma l'audio
+    heroVideoElement.addEventListener("play", () => {
+      // Ferma l'audio se sta riproducendo
+      const audioPlayer = document.querySelector("audio");
+      if (audioPlayer && !audioPlayer.paused) {
+        audioPlayer.pause();
+        // Aggiorna anche i bottoni play/pause dell'audio
+        const playPauseBtn = document.getElementById("play-pause");
+        const miniPlayPauseBtn = document.getElementById("mini-play-pause-btn");
+        if (playPauseBtn) playPauseBtn.innerHTML = "&#9658;";
+        if (miniPlayPauseBtn) miniPlayPauseBtn.innerHTML = "&#9658;";
+      }
+      
+      // Ferma anche il video nella sezione video se sta riproducendo
+      const sectionVideo = document.querySelector('.video-player');
+      if (sectionVideo && !sectionVideo.paused) {
+        sectionVideo.pause();
+      }
+      
+      // Imposta il lock su 'hero-video'
+      currentPlayingMedia = 'hero-video';
+    });
+    
+    // Gestisci anche quando il video hero viene messo in pausa
+    heroVideoElement.addEventListener("pause", () => {
+      if (currentPlayingMedia === 'hero-video') {
+        currentPlayingMedia = null;
+      }
     });
   }
 
@@ -161,6 +212,35 @@ function initVideoCarousel() {
   video.className = "video-player";
   video.muted = true; // Muta temporaneamente per evitare audio durante la cattura del frame
   video.crossOrigin = "anonymous"; // Necessario per alcuni video esterni (Cloudinary)
+  
+  // Gestisci la mutua esclusione con l'audio player
+  video.addEventListener("play", () => {
+    // Ferma l'audio se sta riproducendo
+    const audioPlayer = document.querySelector("audio");
+    if (audioPlayer && !audioPlayer.paused) {
+      audioPlayer.pause();
+      // Aggiorna anche i bottoni play/pause dell'audio
+      const playPauseBtn = document.getElementById("play-pause");
+      const miniPlayPauseBtn = document.getElementById("mini-play-pause-btn");
+      if (playPauseBtn) playPauseBtn.innerHTML = "&#9658;";
+      if (miniPlayPauseBtn) miniPlayPauseBtn.innerHTML = "&#9658;";
+    }
+    
+    // Ferma anche il video hero se sta riproducendo
+    if (heroVideoElement && !heroVideoElement.paused) {
+      heroVideoElement.pause();
+    }
+    
+    // Imposta il lock su 'section-video'
+    currentPlayingMedia = 'section-video';
+  });
+  
+  // Gestisci anche quando il video viene messo in pausa
+  video.addEventListener("pause", () => {
+    if (currentPlayingMedia === 'section-video') {
+      currentPlayingMedia = null;
+    }
+  });
   
   let frameCaptured = false;
   
@@ -296,9 +376,8 @@ function initAudioPlayer() {
     infoWrapper.appendChild(titleEl);
     infoWrapper.appendChild(metaEl);
 
-    const playIcon = document.createElement("button");
+    const playIcon = document.createElement("div");
     playIcon.className = "track-play";
-    playIcon.innerHTML = "&#9658;";
 
     item.appendChild(infoWrapper);
     item.appendChild(playIcon);
@@ -327,6 +406,19 @@ function initAudioPlayer() {
   }
 
   function playAudio() {
+    // Ferma tutti i video se stanno riproducendo
+    if (heroVideoElement && !heroVideoElement.paused) {
+      heroVideoElement.pause();
+    }
+    
+    const sectionVideo = document.querySelector('.video-player');
+    if (sectionVideo && !sectionVideo.paused) {
+      sectionVideo.pause();
+    }
+    
+    // Imposta il lock su 'audio'
+    currentPlayingMedia = 'audio';
+    
     if (currentIndex === -1) {
       loadTrack(0);
       // Aspetta che il track sia caricato prima di riprodurlo
@@ -363,6 +455,18 @@ function initAudioPlayer() {
     isPlaying = false;
     if (playPauseBtn) playPauseBtn.innerHTML = "&#9658;";
     if (miniPlayPauseBtn) miniPlayPauseBtn.innerHTML = "&#9658;";
+    
+    // Rimuovi il lock se l'audio viene fermato
+    if (currentPlayingMedia === 'audio') {
+      currentPlayingMedia = null;
+    }
+    
+    // Riprendi il video hero quando l'audio viene fermato
+    if (heroVideoElement && heroVideoElement.paused && currentPlayingMedia === null) {
+      heroVideoElement.play().catch(() => {
+        // Ignora errori di autoplay
+      });
+    }
   }
 
   function playNext() {
@@ -400,8 +504,11 @@ function initAudioPlayer() {
 
   audio.addEventListener("ended", playNext);
 
+  // Variabile per tracciare se stiamo facendo drag (per evitare conflitti con timeupdate)
+  let isUserDragging = false;
+
   audio.addEventListener("timeupdate", () => {
-    if (!audio.duration) return;
+    if (!audio.duration || isUserDragging) return; // Non aggiornare durante il drag
     const progress = (audio.currentTime / audio.duration) * 100;
     if (progressFill) progressFill.style.width = `${progress}%`;
     if (miniProgressFill) miniProgressFill.style.width = `${progress}%`;
@@ -418,13 +525,89 @@ function initAudioPlayer() {
     }
   });
 
+  // Funzione per aggiornare la posizione dell'audio basata sulla posizione del mouse/touch
+  function updateProgressFromEvent(e, progressBarElement) {
+    if (!audio.duration) return;
+    isUserDragging = true;
+    const rect = progressBarElement.getBoundingClientRect();
+    const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : e.changedTouches[0].clientX);
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    audio.currentTime = ratio * audio.duration;
+    
+    // Aggiorna manualmente la visualizzazione durante il drag
+    const progress = ratio * 100;
+    if (progressFill) progressFill.style.width = `${progress}%`;
+    if (miniProgressFill) miniProgressFill.style.width = `${progress}%`;
+    if (currentTimeSpan) currentTimeSpan.textContent = formatTime(audio.currentTime);
+    if (miniPlayerTime) {
+      miniPlayerTime.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+    }
+  }
+
+  // Gestione drag per il progress bar principale
   if (progressBar) {
+    let isDragging = false;
+    
+    // Click semplice sulla barra
     progressBar.addEventListener("click", (e) => {
-      if (!audio.duration) return;
-      const rect = progressBar.getBoundingClientRect();
-      const ratio = (e.clientX - rect.left) / rect.width;
-      audio.currentTime = ratio * audio.duration;
+      if (isDragging) return; // Evita conflitti durante il drag
+      updateProgressFromEvent(e, progressBar);
     });
+
+    // Mouse events per drag
+    const handleMouseDown = (e) => {
+      if (!audio.duration) return;
+      isDragging = true;
+      progressBar.classList.add("dragging");
+      updateProgressFromEvent(e, progressBar);
+      
+      const handleMouseMove = (e) => {
+        if (isDragging) {
+          updateProgressFromEvent(e, progressBar);
+        }
+      };
+      
+      const handleMouseUp = () => {
+        isDragging = false;
+        isUserDragging = false;
+        progressBar.classList.remove("dragging");
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+      
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    };
+
+    // Touch events per drag su mobile
+    const handleTouchStart = (e) => {
+      if (!audio.duration) return;
+      isDragging = true;
+      progressBar.classList.add("dragging");
+      updateProgressFromEvent(e, progressBar);
+      
+      const handleTouchMove = (e) => {
+        if (isDragging) {
+          e.preventDefault(); // Previeni lo scroll durante il drag
+          updateProgressFromEvent(e, progressBar);
+        }
+      };
+      
+      const handleTouchEnd = () => {
+        isDragging = false;
+        isUserDragging = false;
+        progressBar.classList.remove("dragging");
+        document.removeEventListener("touchmove", handleTouchMove);
+        document.removeEventListener("touchend", handleTouchEnd);
+      };
+      
+      document.addEventListener("touchmove", handleTouchMove, { passive: false });
+      document.addEventListener("touchend", handleTouchEnd);
+    };
+
+    // Aggiungi listener al pallino (attraverso il fill)
+    progressBar.addEventListener("mousedown", handleMouseDown);
+    progressBar.addEventListener("touchstart", handleTouchStart, { passive: true });
   }
 
   if (volumeSlider) {
@@ -481,14 +664,70 @@ function initAudioPlayer() {
     miniPrevBtn.addEventListener("click", playPrev);
   }
 
-  // Click sulla barra di progresso del banner minimizzato
+  // Gestione drag per il progress bar del banner minimizzato
   if (miniProgressBar) {
+    let isDraggingMini = false;
+    
+    // Click semplice sulla barra
     miniProgressBar.addEventListener("click", (e) => {
-      if (!audio.duration) return;
-      const rect = miniProgressBar.getBoundingClientRect();
-      const ratio = (e.clientX - rect.left) / rect.width;
-      audio.currentTime = ratio * audio.duration;
+      if (isDraggingMini) return; // Evita conflitti durante il drag
+      updateProgressFromEvent(e, miniProgressBar);
     });
+
+    // Mouse events per drag
+    const handleMouseDownMini = (e) => {
+      if (!audio.duration) return;
+      isDraggingMini = true;
+      miniProgressBar.classList.add("dragging");
+      updateProgressFromEvent(e, miniProgressBar);
+      
+      const handleMouseMoveMini = (e) => {
+        if (isDraggingMini) {
+          updateProgressFromEvent(e, miniProgressBar);
+        }
+      };
+      
+      const handleMouseUpMini = () => {
+        isDraggingMini = false;
+        isUserDragging = false;
+        miniProgressBar.classList.remove("dragging");
+        document.removeEventListener("mousemove", handleMouseMoveMini);
+        document.removeEventListener("mouseup", handleMouseUpMini);
+      };
+      
+      document.addEventListener("mousemove", handleMouseMoveMini);
+      document.addEventListener("mouseup", handleMouseUpMini);
+    };
+
+    // Touch events per drag su mobile
+    const handleTouchStartMini = (e) => {
+      if (!audio.duration) return;
+      isDraggingMini = true;
+      miniProgressBar.classList.add("dragging");
+      updateProgressFromEvent(e, miniProgressBar);
+      
+      const handleTouchMoveMini = (e) => {
+        if (isDraggingMini) {
+          e.preventDefault(); // Previeni lo scroll durante il drag
+          updateProgressFromEvent(e, miniProgressBar);
+        }
+      };
+      
+      const handleTouchEndMini = () => {
+        isDraggingMini = false;
+        isUserDragging = false;
+        miniProgressBar.classList.remove("dragging");
+        document.removeEventListener("touchmove", handleTouchMoveMini);
+        document.removeEventListener("touchend", handleTouchEndMini);
+      };
+      
+      document.addEventListener("touchmove", handleTouchMoveMini, { passive: false });
+      document.addEventListener("touchend", handleTouchEndMini);
+    };
+
+    // Aggiungi listener al pallino (attraverso il fill)
+    miniProgressBar.addEventListener("mousedown", handleMouseDownMini);
+    miniProgressBar.addEventListener("touchstart", handleTouchStartMini, { passive: true });
   }
 
   // Nascondi il banner quando l'audio finisce (opzionale)
@@ -496,6 +735,18 @@ function initAudioPlayer() {
     // Il banner rimane visibile anche quando finisce, così l'utente può riprodurre facilmente
     // Se vuoi nasconderlo, decommenta la riga seguente:
     // hideMiniPlayer();
+    
+    // Rimuovi il lock quando l'audio finisce
+    if (currentPlayingMedia === 'audio') {
+      currentPlayingMedia = null;
+    }
+    
+    // Riprendi il video hero quando l'audio finisce (solo se nessun altro media sta riproducendo)
+    if (heroVideoElement && heroVideoElement.paused && currentPlayingMedia === null) {
+      heroVideoElement.play().catch(() => {
+        // Ignora errori di autoplay
+      });
+    }
   });
 }
 
