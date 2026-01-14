@@ -3,48 +3,21 @@
 
 // Configurazione Cloudinary per i video
 const CLOUDINARY_VIDEOS = {
-  heroVideo: "https://res.cloudinary.com/dq33ayw5c/video/upload/v1768243515/Video_Sfondo_Home.mp4", // AGGIORNA QUESTO URL dopo aver caricato il video su Cloudinary
   mashupVideo: "https://res.cloudinary.com/dq33ayw5c/video/upload/v1768243515/Mashup_kxdrlp.mp4"
 };
 
 // Funzione helper per generare URL corretti dei file multimediali
-// Su GitHub Pages, i file LFS potrebbero non essere accessibili direttamente
-// Quindi usiamo gli URL raw di GitHub per i file multimediali
+// Nota: su GitHub Pages è meglio usare percorsi relativi al sito (non raw.githubusercontent.com).
+// Se un file è tracciato con Git LFS, GitHub Pages potrebbe NON servirlo come contenuto binario reale.
 function getMediaUrl(relativePath) {
   // Rimuovi eventuali "./" iniziali per normalizzare
   let path = relativePath.replace(/^\.\//, '');
-  
-  // Su GitHub Pages, usa gli URL raw di GitHub per i file multimediali
-  // perché i file LFS potrebbero non essere serviti correttamente da GitHub Pages
-  const isGitHubPages = window.location.hostname.includes('github.io');
-  
-  if (isGitHubPages) {
-    // Estrai username e repository dall'URL corrente
-    // Formato GitHub Pages: https://username.github.io/repository/
-    const hostnameParts = window.location.hostname.split('.');
-    const username = hostnameParts[0]; // La prima parte dell'hostname è l'username
-    
-    // Estrai il nome del repository dal pathname
-    // Se il pathname è "/repository/" o "/repository/index.html", il repo è "repository"
-    const pathnameParts = window.location.pathname.split('/').filter(p => p);
-    const repoName = pathnameParts[0] || 'LetiFra'; // Fallback al nome della cartella locale
-    
-    // Prova prima con 'main', poi con 'master' come fallback
-    const branch = 'main';
-    
-    // Codifica gli spazi e altri caratteri speciali nel percorso
-    // GitHub raw URLs richiedono che gli spazi siano codificati come %20
-    const encodedPath = encodeURI(path).replace(/#/g, '%23');
-    
-    // Costruisci l'URL raw di GitHub per il file
-    // Formato: https://raw.githubusercontent.com/username/repo/branch/path
-    const rawUrl = `https://raw.githubusercontent.com/${username}/${repoName}/${branch}/${encodedPath}`;
-    
-    return rawUrl;
-  } else {
-    // In locale, usa percorsi relativi (rimuovi "/" iniziale se presente)
-    return path.replace(/^\//, '');
-  }
+
+  // Codifica spazi e caratteri speciali (es. "Video Home.mp4" -> "Video%20Home.mp4")
+  const encodedPath = encodeURI(path).replace(/#/g, '%23');
+
+  // Sempre percorso relativo (funziona sia in locale che su GitHub Pages)
+  return encodedPath.replace(/^\//, '');
 }
 
 // Variabile globale per il video hero (per gestire la mutua esclusione con l'audio)
@@ -62,8 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const heroVideoSource = document.querySelector('.hero-video source');
   
   if (heroVideoElement) {
-    // Usa sempre il file locale, sia in locale che su GitHub Pages
-    // La funzione getMediaUrl gestisce automaticamente i percorsi corretti
+    // Video hero: usa il file del sito (percorso relativo).
+    // Importante: se l'.mp4 è in Git LFS, GitHub Pages potrebbe non servirlo correttamente.
     const videoUrl = getMediaUrl("Video/Video Home.mp4");
     
     // Aggiorna il source se esiste, altrimenti imposta direttamente il src del video
@@ -71,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       heroVideoSource.src = videoUrl;
       heroVideoSource.type = "video/mp4";
     } else {
+      // Se non c'è il tag <source>, impostiamo direttamente il src del <video>
       heroVideoElement.src = videoUrl;
     }
     
@@ -80,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gestisci errori di caricamento
     heroVideoElement.addEventListener("error", (e) => {
       console.error("Errore nel caricamento del video hero:", e);
-      // Prova con percorso diretto come fallback
+      // Fallback: prova il percorso locale diretto (non encoded) nel caso il browser lo gestisca
       const fallbackUrl = "Video/Video Home.mp4";
       if (heroVideoSource) {
         heroVideoSource.src = fallbackUrl;
