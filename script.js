@@ -117,6 +117,18 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Video hero pronto per la riproduzione");
     });
     
+    // Assicurati che il video riparta in loop quando finisce
+    heroVideoElement.addEventListener("ended", () => {
+      // Se il loop non funziona per qualche motivo, riavvia manualmente
+      heroVideoElement.currentTime = 0;
+      heroVideoElement.play().catch(() => {
+        // Ignora errori di autoplay
+      });
+    });
+    
+    // Imposta esplicitamente il loop per sicurezza
+    heroVideoElement.loop = true;
+    
     // Gestisci la mutua esclusione: quando il video hero inizia a riprodursi, ferma l'audio
     heroVideoElement.addEventListener("play", () => {
       // Ferma l'audio se sta riproducendo
@@ -463,6 +475,8 @@ function initAudioPlayer() {
     
     // Riprendi il video hero quando l'audio viene fermato
     if (heroVideoElement && heroVideoElement.paused && currentPlayingMedia === null) {
+      // Assicurati che il loop sia attivo
+      heroVideoElement.loop = true;
       heroVideoElement.play().catch(() => {
         // Ignora errori di autoplay
       });
@@ -743,6 +757,8 @@ function initAudioPlayer() {
     
     // Riprendi il video hero quando l'audio finisce (solo se nessun altro media sta riproducendo)
     if (heroVideoElement && heroVideoElement.paused && currentPlayingMedia === null) {
+      // Assicurati che il loop sia attivo
+      heroVideoElement.loop = true;
       heroVideoElement.play().catch(() => {
         // Ignora errori di autoplay
       });
